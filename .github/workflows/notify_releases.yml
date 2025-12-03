@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r notify_releases/requirements.txt
+          pip install -r requirements.txt
 
       - name: Notify about new releases
         env:
