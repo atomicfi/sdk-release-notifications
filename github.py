@@ -80,8 +80,11 @@ class GitHubRelease:
 
 
 class GitHubClient:
-    def __init__(self):
-        self.github = GitHub()
+    def __init__(self, token: str | None = None):
+        if token:
+            self.github = GitHub(token)
+        else:
+            self.github = GitHub()
 
     def get_release(self, owner: str, repo: str, tag: str) -> GitHubRelease:
         response = self.github.rest.repos.get_release_by_tag(owner=owner, repo=repo, tag=tag)

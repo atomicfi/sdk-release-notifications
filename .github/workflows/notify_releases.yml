@@ -4,7 +4,7 @@ on:
   workflow_call:
     secrets:
       GITHUB_DEPLOY_KEY:
-        description: "GitHub ssh key with access to mobile-conformance-tests repository"
+        description: "GitHub ssh key with access to sdk-release-notifications repository"
         required: true
       SLACK_WEBHOOK_URL:
         description: "Slack Incoming Webhook URL"
@@ -15,6 +15,9 @@ on:
       LINEAR_API_KEY:
         description: "Linear API key for creating issues"
         required: true
+      GITHUB_RELEASE_PULL_TOKEN:
+        description: "GitHub token for accessing release information"
+        required: false
     inputs:
       srn_ref:
         description: "The branch, tag, or commit SHA to checkout for the sdk-release-notifications repo"
@@ -48,5 +51,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          GITHUB_RELEASE_PULL_TOKEN: ${{ secrets.GITHUB_RELEASE_PULL_TOKEN }}
         run: |
           python -m main

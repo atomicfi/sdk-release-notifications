@@ -23,3 +23,6 @@ class PARAMS:
 
     linear_api_key = os.getenv("LINEAR_API_KEY")
     assert linear_api_key, "LINEAR_API_KEY is not set"
+
+    github_token = os.getenv("GITHUB_RELEASE_PULL_TOKEN")
+    # Optional, so no assertion here
