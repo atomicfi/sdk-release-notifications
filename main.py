@@ -6,7 +6,7 @@ from slack import send_slack_notification
 
 
 def main():
-    release = GitHubClient().get_release(GITHUB.owner, GITHUB.name, GITHUB.version)
+    release = GitHubClient(PARAMS.github_token).get_release(GITHUB.owner, GITHUB.name, GITHUB.version)
     print(release)
 
     page_url = add_notion_database_row(release, PARAMS.notion_api_key)
