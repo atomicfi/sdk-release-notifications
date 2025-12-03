@@ -1,0 +1,4 @@
+slackblocks==1.2.3
+linear-api==0.2.0
+notion-client==2.7.0
+githubkit==0.13.6

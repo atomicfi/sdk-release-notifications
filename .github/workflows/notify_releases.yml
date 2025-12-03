@@ -1,0 +1,52 @@
+name: Notify Releases
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_DEPLOY_KEY:
+        description: "GitHub ssh key with access to mobile-conformance-tests repository"
+        required: true
+      SLACK_WEBHOOK_URL:
+        description: "Slack Incoming Webhook URL"
+        required: true
+      NOTION_API_KEY:
+        description: "Notion API key for accessing Notion SDK Releases page"
+        required: true
+      LINEAR_API_KEY:
+        description: "Linear API key for creating issues"
+        required: true
+    inputs:
+      srn_ref:
+        description: "The branch, tag, or commit SHA to checkout for the sdk-release-notifications repo"
+        required: false
+        default: "main"
+        type: string
+
+jobs:
+  notify:
+    name: Notify about new releases
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          repository: atomicfi/sdk-release-notifications
+          ref: ${{ inputs.srn_ref }}
+          ssh-key: ${{ secrets.GITHUB_DEPLOY_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r notify_releases/requirements.txt
+
+      - name: Notify about new releases
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          python -m main
