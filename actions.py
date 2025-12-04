@@ -10,8 +10,7 @@ class GITHUB:
 
     owner = repository.split("/")[0]
     name = repository.split("/")[-1]
-    version = ref.split("/")[-1]
-    url = f"https://github.com/{repository}/releases/tag/{version}"
+    version = ref.split("/")[-1] if ref.startswith("refs/tags/") else None
 
 
 class PARAMS:

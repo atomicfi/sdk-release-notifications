@@ -2,6 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from githubkit import GitHub
+from githubkit.exception import RequestFailed
 from githubkit.versions.latest.models import Release
 
 
@@ -86,7 +87,13 @@ class GitHubClient:
         else:
             self.github = GitHub()
 
-    def get_release(self, owner: str, repo: str, tag: str) -> GitHubRelease:
-        response = self.github.rest.repos.get_release_by_tag(owner=owner, repo=repo, tag=tag)
+    def get_release(self, owner: str, repo: str, tag: str | None) -> GitHubRelease:
+        if tag:
+            try:
+                response = self.github.rest.repos.get_release_by_tag(owner=owner, repo=repo, tag=tag)
+            except RequestFailed:
+                response = self.github.rest.repos.get_latest_release(owner=owner, repo=repo)
+        else:
+            response = self.github.rest.repos.get_latest_release(owner=owner, repo=repo)
         release: Release = response.parsed_data
         return GitHubRelease(release=release, owner=owner, repo=repo)
