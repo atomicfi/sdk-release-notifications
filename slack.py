@@ -19,7 +19,13 @@ from slackblocks import (
 from github import GitHubRelease
 
 
-def send_slack_notification(release: GitHubRelease, webhook_url: str, notion_page: str | None, linear_url: str | None):
+def send_slack_notification(
+    release: GitHubRelease,
+    webhook_url: str,
+    notion_page: str | None,
+    linear_url: str | None,
+    drive_url: str | None,
+):
     title = f"*{release.repo}*: _{release.tag_name}_ was released!"
     body = release.formatted_body
 
@@ -68,6 +74,12 @@ def send_slack_notification(release: GitHubRelease, webhook_url: str, notion_pag
         actions.append(Button(
             text=":linear: View Linear Issue",
             url=linear_url,
+            action_id=str(uuid4()),
+        ))
+    if drive_url:
+        actions.append(Button(
+            text=":google_drive: View Release PDF",
+            url=drive_url,
             action_id=str(uuid4()),
         ))
     if len(actions) > 0:

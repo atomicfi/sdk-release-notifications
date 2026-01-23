@@ -2,6 +2,7 @@ from actions import GITHUB, PARAMS
 from github import GitHubClient
 from linear import Linear
 from notion import add_notion_database_row
+from pdf import save_release_to_drive
 from slack import send_slack_notification
 
 
@@ -11,10 +12,9 @@ def main():
 
     page_url = add_notion_database_row(release, PARAMS.notion_api_key)
     linear_url = Linear(PARAMS.linear_api_key).create_linear_issue(release, notion_page=page_url)
+    drive_url = save_release_to_drive(release, folder_id=PARAMS.drive_folder_id)
 
-    print(linear_url)
-
-    send_slack_notification(release, PARAMS.slack_webhook_url, notion_page=page_url, linear_url=linear_url)
+    send_slack_notification(release, PARAMS.slack_webhook_url, notion_page=page_url, linear_url=linear_url, drive_url=drive_url)
 
 
 if __name__ == "__main__":

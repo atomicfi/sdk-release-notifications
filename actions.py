@@ -25,3 +25,6 @@ class PARAMS:
 
     github_token = os.getenv("GITHUB_RELEASE_PULL_TOKEN")
     # Optional, so no assertion here
+
+    drive_folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
+    assert drive_folder_id, "GOOGLE_DRIVE_FOLDER_ID is not set"
