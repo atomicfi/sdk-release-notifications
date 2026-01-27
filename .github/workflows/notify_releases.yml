@@ -15,7 +15,7 @@ on:
       LINEAR_API_KEY:
         description: "Linear API key for creating issues"
         required: true
-      DRIVE_API_SERVICE_KEY:
+      GOOGLE_SERVICE_ACCOUNT_FILE:
         description: "Google Drive API service_account.json"
         required: true
       GOOGLE_DRIVE_FOLDER_ID:
@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "$SERVICE_ACCOUNT_JSON" > service_account.json
         env:
-          SERVICE_ACCOUNT_JSON: ${{ secrets.DRIVE_API_SERVICE_KEY }}
+          SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_FILE }}
 
       - name: Notify about new releases
         env:
