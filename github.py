@@ -21,6 +21,7 @@ class GitHubRelease:
             "atomic-transact-android-public": "Android",
             "atomic-transact-react-native": "React Native",
             "atomic-transact-flutter": "Flutter",
+            "atomic-transact-capacitor": "Capacitor"
         }.get(self.repo)
         self.formatted_body = f"# {self.platform_name} {self.tag_name}\n\n{self.body}"
 

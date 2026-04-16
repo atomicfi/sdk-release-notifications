@@ -120,11 +120,15 @@ class Linear:
         """
 
         platform_name = f"{platform} Version"
-        result = self.client.teams._execute_query(query, variables={
-            "teamId": team_id,
-            "platform": platform_name,
-            "version": version
-        })
+        try:
+            result = self.client.teams._execute_query(query, variables={
+                "teamId": team_id,
+                "platform": platform_name,
+                "version": version
+            })
+        except ValueError as e:
+            print(f"Error checking for existing version label: {e}")
+            return None
         labels = result.get("issueLabels", {}).get("nodes", [])
         if labels and len(labels) > 0:
             id = labels[0].get("id")
@@ -149,12 +153,16 @@ class Linear:
         }
         """
         # Color gets set automatically from the parent
-        result = self.client.teams._execute_query(mutation, variables={
-            "issueLabelCreateInput": {
-                "parentId": parent,
-                "name": version,
-                "teamId": team_id,
-            }
-        })
-        created_label = result.get("issueLabelCreate", {}).get("issueLabel", {})
-        return created_label.get("id")
+        try:
+            result = self.client.teams._execute_query(mutation, variables={
+                "issueLabelCreateInput": {
+                    "parentId": parent,
+                    "name": version,
+                    "teamId": team_id,
+                }
+            })
+            created_label = result.get("issueLabelCreate", {}).get("issueLabel", {})
+            return created_label.get("id")
+        except ValueError as e:
+            print(f"Error creating version label: {e}")
+            return None
