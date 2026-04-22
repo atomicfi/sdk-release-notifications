@@ -34,7 +34,7 @@ class Linear:
             title=issue_title,
             description=issue_description,
             teamName="SDK",
-            projectName="Release Notes",
+            projectName="SDK Release Notes",
             stateName="Todo",
             assigneeId=user_id,
             labelIds=labels,
