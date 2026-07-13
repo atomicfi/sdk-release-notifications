@@ -18,6 +18,20 @@ from slackblocks import (
 
 from github import GitHubRelease
 
+# Slack section blocks cap their text at 3000 characters.
+SLACK_SECTION_TEXT_LIMIT = 3000
+
+
+def _truncate_for_slack(text: str, limit: int = SLACK_SECTION_TEXT_LIMIT) -> str:
+    """Truncate text to fit within Slack's section text limit, adding a notice when cut.
+
+    The full release notes remain available via the message's link buttons.
+    """
+    if len(text) <= limit:
+        return text
+    suffix = "…\n\n_Release notes truncated — see the full release using the links below._"
+    return text[: limit - len(suffix)].rstrip() + suffix
+
 
 def send_slack_notification(
     release: GitHubRelease,
@@ -27,7 +41,7 @@ def send_slack_notification(
     drive_url: str | None,
 ):
     title = f"*{release.repo}*: _{release.tag_name}_ was released!"
-    body = release.formatted_body
+    body = _truncate_for_slack(release.formatted_body)
 
     blocks = [
             SectionBlock(
