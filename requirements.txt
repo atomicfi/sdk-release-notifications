@@ -1,7 +1,7 @@
 slackblocks==2.0.0
 linear-api==0.2.0
 notion-client==3.1.0
-githubkit==0.15.5
-markdown-pdf==1.13.1
-google-auth==2.53.0
-google-api-python-client==2.196.0
+githubkit==0.16.0
+markdown-pdf==1.13.2
+google-auth==2.55.0
+google-api-python-client==2.197.0
