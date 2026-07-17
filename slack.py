@@ -7,6 +7,7 @@ from slackblocks import (
     Button,
     ContextBlock,
     DividerBlock,
+    MarkdownBlock,
     RawText,
     ResponseType,
     RichTextObject,
@@ -18,12 +19,12 @@ from slackblocks import (
 
 from github import GitHubRelease
 
-# Slack section blocks cap their text at 3000 characters.
-SLACK_SECTION_TEXT_LIMIT = 3000
+# Slack caps the cumulative text of Markdown blocks in a message at 12,000 characters.
+SLACK_MARKDOWN_TEXT_LIMIT = 12_000
 
 
-def _truncate_for_slack(text: str, limit: int = SLACK_SECTION_TEXT_LIMIT) -> str:
-    """Truncate text to fit within Slack's section text limit, adding a notice when cut.
+def _truncate_for_slack(text: str, limit: int = SLACK_MARKDOWN_TEXT_LIMIT) -> str:
+    """Truncate text to fit Slack's Markdown-block limit, adding a notice when cut.
 
     The full release notes remain available via the message's link buttons.
     """
@@ -51,7 +52,7 @@ def send_slack_notification(
                     action_id=str(uuid4()),
                 ),
             ),
-            SectionBlock(
+            MarkdownBlock(
                 text=body,
             ),
             ContextBlock(
