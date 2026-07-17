@@ -5,3 +5,4 @@ githubkit==0.16.0
 markdown-pdf==1.13.2
 google-auth==2.55.0
 google-api-python-client==2.197.0
+databricks-sql-connector[pyarrow]==4.2.6
