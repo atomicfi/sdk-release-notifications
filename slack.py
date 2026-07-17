@@ -85,7 +85,7 @@ def send_slack_notification(
         ))
     if linear_url:
         actions.append(Button(
-            text=":linear: View Linear Issue",
+            text=":linear: View Linear Releases",
             url=linear_url,
             action_id=str(uuid4()),
         ))

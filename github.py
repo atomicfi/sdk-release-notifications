@@ -23,6 +23,13 @@ class GitHubRelease:
             "atomic-transact-flutter": "Flutter",
             "atomic-transact-capacitor": "Capacitor"
         }.get(self.repo)
+        self.linear_releases_url = {
+            "atomic-transact-ios": "https://linear.app/atomicbuilt/pipeline/ios/releases",
+            "atomic-transact-android-public": "https://linear.app/atomicbuilt/pipeline/android-sdk/releases",
+            "atomic-transact-react-native": "https://linear.app/atomicbuilt/pipeline/react-native-sdk/releases",
+            "atomic-transact-flutter": "https://linear.app/atomicbuilt/pipeline/flutter-sdk/releases",
+            "atomic-transact-capacitor": "https://linear.app/atomicbuilt/pipeline/capacitor-sdk/releases",
+        }.get(self.repo)
         self.formatted_body = f"# {self.platform_name} {self.tag_name}\n\n{self.body}"
 
     def _format_published_date(self, published_at) -> str:
