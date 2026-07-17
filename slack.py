@@ -7,6 +7,7 @@ from slackblocks import (
     Button,
     ContextBlock,
     DividerBlock,
+    MarkdownBlock,
     RawText,
     ResponseType,
     RichTextObject,
@@ -18,12 +19,12 @@ from slackblocks import (
 
 from github import GitHubRelease
 
-# Slack section blocks cap their text at 3000 characters.
-SLACK_SECTION_TEXT_LIMIT = 3000
+# Slack caps the cumulative text of Markdown blocks in a message at 12,000 characters.
+SLACK_MARKDOWN_TEXT_LIMIT = 12_000
 
 
-def _truncate_for_slack(text: str, limit: int = SLACK_SECTION_TEXT_LIMIT) -> str:
-    """Truncate text to fit within Slack's section text limit, adding a notice when cut.
+def _truncate_for_slack(text: str, limit: int = SLACK_MARKDOWN_TEXT_LIMIT) -> str:
+    """Truncate text to fit Slack's Markdown-block limit, adding a notice when cut.
 
     The full release notes remain available via the message's link buttons.
     """
@@ -38,7 +39,6 @@ def send_slack_notification(
     webhook_url: str,
     notion_page: str | None,
     linear_url: str | None,
-    drive_url: str | None,
 ):
     title = f"*{release.repo}*: _{release.tag_name}_ was released!"
     body = _truncate_for_slack(release.formatted_body)
@@ -52,7 +52,7 @@ def send_slack_notification(
                     action_id=str(uuid4()),
                 ),
             ),
-            SectionBlock(
+            MarkdownBlock(
                 text=body,
             ),
             ContextBlock(
@@ -86,14 +86,8 @@ def send_slack_notification(
         ))
     if linear_url:
         actions.append(Button(
-            text=":linear: View Linear Issue",
+            text=":linear: View Linear Releases",
             url=linear_url,
-            action_id=str(uuid4()),
-        ))
-    if drive_url:
-        actions.append(Button(
-            text=":google_drive: View Release PDF",
-            url=drive_url,
             action_id=str(uuid4()),
         ))
     if len(actions) > 0:
