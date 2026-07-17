@@ -50,6 +50,5 @@ ENV/
 
 # mypy
 .mypy_cache/
-service_account.json
 local_test.zsh
 /setupReleaseVersions.py

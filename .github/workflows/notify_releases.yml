@@ -15,12 +15,6 @@ on:
       LINEAR_API_KEY:
         description: "Linear API key for creating issues"
         required: true
-      GOOGLE_SERVICE_ACCOUNT_FILE:
-        description: "Google Drive API service_account.json"
-        required: true
-      GOOGLE_DRIVE_FOLDER_ID:
-        description: "Google Drive folder ID where PDFs will be saved"
-        required: true
       GITHUB_RELEASE_PULL_TOKEN:
         description: "GitHub token for accessing release information"
         required: false
@@ -52,24 +46,11 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Prepare Google Drive API credentials
-        run: |
-          echo "$SERVICE_ACCOUNT_JSON" > service_account.json
-        env:
-          SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_FILE }}
-
       - name: Notify about new releases
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
           GITHUB_RELEASE_PULL_TOKEN: ${{ secrets.GITHUB_RELEASE_PULL_TOKEN }}
-          GOOGLE_SERVICE_ACCOUNT_FILE: service_account.json
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
         run: |
           python -m main
-
-      - name: Clean up Google Drive API credentials
-        if: always()
-        run: |
-          rm service_account.json
