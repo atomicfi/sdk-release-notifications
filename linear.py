@@ -5,7 +5,7 @@ from github import GitHubRelease
 
 class Linear:
     def __init__(self, api_key: str):
-        self.client = LinearClient(api_key=api_key)
+        self.client: LinearClient = LinearClient(api_key=api_key)
 
     def create_linear_issue(self, release: GitHubRelease, notion_page: str | None) -> None:
         issue_title = f"Notify Release {release.platform_name} {release.tag_name}"

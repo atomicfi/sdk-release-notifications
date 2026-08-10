@@ -1,22 +1,19 @@
-from typing import List
 from uuid import uuid4
 
 import requests
-
-from slackblocks import (
+from slackblocks.blocks import (
     ActionsBlock,
-    Button,
+    Block,
     ContextBlock,
     DividerBlock,
     MarkdownBlock,
-    RawText,
-    ResponseType,
-    RichTextObject,
     SectionBlock,
     TableBlock,
-    Text,
-    WebhookMessage,
 )
+from slackblocks.elements import Button
+from slackblocks.messages import ResponseType, WebhookMessage
+from slackblocks.objects import RawText, Text
+from slackblocks.rich_text.objects import RichTextObject
 
 from github import GitHubRelease
 
@@ -39,10 +36,10 @@ def _truncate_for_slack(text: str, limit: int = SLACK_MARKDOWN_TEXT_LIMIT) -> st
 
 def _build_blocks(
     release: GitHubRelease,
-    body_block,
+    body_block: Block,
     notion_page: str | None,
     linear_url: str | None,
-) -> list:
+) -> list[Block]:
     """Build the shared layout around either release-notes block type."""
     title = f"*{release.repo}*: _{release.tag_name}_ was released!"
     blocks = [
@@ -66,8 +63,8 @@ def _build_blocks(
     ]
 
     if len(release.assets) > 0:
-        header: List[RawText | RichTextObject] = [RawText(text="Asset Name"), RawText(text="Size")]
-        asset_rows: List[List[RawText | RichTextObject]] = [
+        header: list[RawText | RichTextObject] = [RawText(text="Asset Name"), RawText(text="Size")]
+        asset_rows: list[list[RawText | RichTextObject]] = [
             [RawText(text=asset.name), RawText(text=asset.size_mb)]
             for asset in release.assets
         ]
