@@ -1,7 +1,7 @@
-import urllib.error
-import urllib.request
 from typing import List
 from uuid import uuid4
+
+import requests
 
 from slackblocks import (
     ActionsBlock,
@@ -93,20 +93,24 @@ def _build_blocks(
 
 
 def _send_webhook_message(message: WebhookMessage, webhook_url: str) -> None:
-    data = message.json().encode("utf-8")
-    req = urllib.request.Request(
+    response = requests.post(
         webhook_url,
-        data=data,
-        headers={
-            "Content-Type": "application/json",
-        },
+        data=message.json(),
+        headers={"Content-Type": "application/json"},
+        timeout=10,
     )
-    with urllib.request.urlopen(req) as response:
-        if response.getcode() != 200:
-            response_body = response.read().decode("utf-8", errors="replace")
-            raise RuntimeError(
-                f"Failed to send message to Slack > {response.getcode()} {response_body}"
-            )
+    response.raise_for_status()
+    if response.status_code != 200:
+        raise requests.HTTPError(
+            f"Unexpected Slack response: {response.status_code} {response.text}",
+            response=response,
+        )
+
+
+def _http_error_details(error: requests.HTTPError) -> str:
+    if error.response is None:
+        return str(error)
+    return f"{error.response.status_code} {error.response.reason}"
 
 
 def send_slack_notification(
@@ -132,9 +136,10 @@ def send_slack_notification(
     try:
         _send_webhook_message(message, webhook_url)
         print(f"Message was sent successfully > {message.text}")
-    except urllib.error.HTTPError as e:
+    except requests.HTTPError as error:
+        error_details = _http_error_details(error)
         print(
-            f"Markdown release notes were rejected by Slack ({e.code} {e.reason}); "
+            f"Markdown release notes were rejected by Slack ({error_details}); "
             "retrying with a section block."
         )
         fallback_body = _truncate_for_slack(
@@ -153,9 +158,9 @@ def send_slack_notification(
         try:
             _send_webhook_message(fallback_message, webhook_url)
             print(f"Fallback message was sent successfully > {fallback_message.text}")
-        except urllib.error.HTTPError as fallback_error:
+        except requests.HTTPError as fallback_error:
             raise RuntimeError(
                 "Failed to send the Markdown Slack message and its section-block fallback "
-                f"> Markdown: {e.code} {e.reason}; "
-                f"fallback: {fallback_error.code} {fallback_error.reason}"
+                f"> Markdown: {error_details}; "
+                f"fallback: {_http_error_details(fallback_error)}"
             ) from fallback_error
