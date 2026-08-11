@@ -1,21 +1,52 @@
+from collections.abc import Sequence
 from datetime import date, datetime
+from typing import Protocol
 from zoneinfo import ZoneInfo
 
 from githubkit import GitHub
 from githubkit.exception import RequestFailed
-from githubkit.versions.latest.models import Release
+
+
+class GitHubReleaseAssetData(Protocol):
+    @property
+    def name(self) -> str: ...
+
+    @property
+    def browser_download_url(self) -> str: ...
+
+    @property
+    def size(self) -> int: ...
+
+
+class GitHubReleaseData(Protocol):
+    @property
+    def tag_name(self) -> str: ...
+
+    @property
+    def body(self) -> object: ...
+
+    @property
+    def html_url(self) -> str: ...
+
+    @property
+    def published_at(self) -> object: ...
+
+    @property
+    def assets(self) -> Sequence[GitHubReleaseAssetData]: ...
 
 
 class GitHubRelease:
-    def __init__(self, release: Release, owner: str, repo: str):
+    def __init__(self, release: GitHubReleaseData, owner: str, repo: str) -> None:
         self.owner = owner
         self.repo = repo
         self.tag_name = release.tag_name
-        self.body = release.body.replace('\r\n', '\n') if release.body else ""
+        self.body = release.body.replace('\r\n', '\n') if isinstance(release.body, str) else ""
         self.url = release.html_url
         self.published = release.published_at
         self.published_pretty = self._format_published_date(release.published_at)
-        self.assets = [GitHubRelease.ReleaseAsset(asset) for asset in release.assets]
+        self.assets = [
+            GitHubRelease.ReleaseAsset(asset) for asset in release.assets
+        ]
         self.platform_name = {
             "atomic-transact-ios": "iOS",
             "atomic-transact-android-public": "Android",
@@ -32,7 +63,7 @@ class GitHubRelease:
         }.get(self.repo)
         self.formatted_body = f"# {self.platform_name} {self.tag_name}\n\n{self.body}"
 
-    def _format_published_date(self, published_at) -> str:
+    def _format_published_date(self, published_at: object) -> str:
         """Format the ISO8601 published date into a pretty string in Mountain Time."""
         if not published_at:
             return "Unknown date"
@@ -70,7 +101,7 @@ class GitHubRelease:
         return f"GitHubRelease(tag_name='{self.tag_name}', published={self.published}, assets_count={len(self.assets)})"
 
     class ReleaseAsset:
-        def __init__(self, asset):
+        def __init__(self, asset: GitHubReleaseAssetData) -> None:
             self.name = asset.name
             self.download_url = asset.browser_download_url
             self.size = asset.size
@@ -89,7 +120,7 @@ class GitHubRelease:
 
 
 class GitHubTag:
-    def __init__(self, owner: str, repo: str, tag_name: str, published: str):
+    def __init__(self, owner: str, repo: str, tag_name: str, published: str) -> None:
         self.owner = owner
         self.repo = repo
         self.tag_name = tag_name
@@ -111,7 +142,7 @@ class GitHubTag:
 
 
 class GitHubClient:
-    def __init__(self, token: str | None = None):
+    def __init__(self, token: str | None = None) -> None:
         if token:
             self.github = GitHub(token)
         else:
@@ -135,7 +166,7 @@ class GitHubClient:
                 response = self.github.rest.repos.get_latest_release(owner=owner, repo=repo)
         else:
             response = self.github.rest.repos.get_latest_release(owner=owner, repo=repo)
-        release: Release = response.parsed_data
+        release: GitHubReleaseData = response.parsed_data
         return GitHubRelease(release=release, owner=owner, repo=repo)
 
     def get_tags_before_date(self, owner: str, repo: str, before_date_iso: str) -> list[GitHubTag]:
