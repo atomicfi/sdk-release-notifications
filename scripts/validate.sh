@@ -11,6 +11,9 @@ ruff check .
 echo "Running pyright linting"
 pyright
 
+echo "Running release notification tests"
+python -m unittest test_linear
+
 echo "Validating all files compile"
 
 python_files=()

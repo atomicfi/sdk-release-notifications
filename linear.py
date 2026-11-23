@@ -1,4 +1,6 @@
-from linear_api import LinearClient, LinearIssueInput
+from typing import Any
+
+from linear_api import LinearClient
 
 from github import GitHubRelease
 
@@ -17,7 +19,23 @@ class Linear:
             f"+++ # Release Notes\n\n{release.formatted_body}\n\n+++"  # +++ frames a collapsible section
         )
 
-        team_id = self.get_sdk_team_id()
+        routing = self.client.execute_graphql("""
+            query ReleaseNotificationRouting {
+                teams(filter: { key: { eq: "SDK" } }) {
+                    nodes {
+                        id
+                        projects(filter: { name: { eq: "SDK Release Notes" } }) { nodes { id } }
+                        states(filter: { name: { eq: "Todo" } }) { nodes { id } }
+                    }
+                }
+                users(filter: { email: { eq: "erik.sargent@atomicfi.com" } }) { nodes { id } }
+            }
+        """)
+        teams = routing["teams"]["nodes"]
+        if len(teams) != 1:
+            raise ValueError("Expected one Linear team with key SDK")
+        team = teams[0]
+        team_id = team["id"]
         release_notification_label_id = self.get_label_by_name(
             "Release Notification",
             team_id=team_id,
@@ -35,22 +53,30 @@ class Linear:
             if platform_label_id:
                 label_ids.append(platform_label_id)
 
-        user_id = self.client.users.get_id_by_email("erik.sargent@atomicfi.com")
+        issue_input = {
+            "title": issue_title,
+            "description": issue_description,
+            "teamId": team_id,
+            "projectId": self._required_id(team["projects"], "SDK Release Notes project"),
+            "stateId": self._required_id(team["states"], "Todo state"),
+            "assigneeId": self._required_id(routing["users"], "release notification assignee"),
+            "labelIds": label_ids,
+        }
+        result = self.client.execute_graphql("""
+            mutation CreateReleaseNotification($input: IssueCreateInput!) {
+                issueCreate(input: $input) { success issue { id } }
+            }
+        """, {"input": issue_input})
+        created = result["issueCreate"]
+        if not created["success"] or not created["issue"]:
+            raise ValueError(f"Linear did not confirm creation of {issue_title}")
 
-        new_issue = LinearIssueInput(
-            title=issue_title,
-            description=issue_description,
-            teamName="SDK",
-            projectName="SDK Release Notes",
-            stateName="Todo",
-            assigneeId=user_id,
-            labelIds=label_ids,
-        )
-
-        self.client.issues.create(new_issue)
-
-    def get_sdk_team_id(self) -> str:
-        return self.client.teams.get("SDK").id
+    @staticmethod
+    def _required_id(connection: dict[str, Any], name: str) -> str:
+        nodes = connection["nodes"]
+        if len(nodes) != 1:
+            raise ValueError(f"Expected one Linear {name}, found {len(nodes)}")
+        return nodes[0]["id"]
 
     def get_label_by_name(self, label_name: str, team_id: str) -> str | None:
         query = """
@@ -66,7 +92,7 @@ class Linear:
         }
         """
 
-        result = self.client.teams._execute_query(query, variables={
+        result = self.client.execute_graphql(query, variables={
             "teamId": team_id,
             "labelName": label_name,
         })
@@ -89,7 +115,7 @@ class Linear:
         }
         """
 
-        result = self.client.teams._execute_query(query, variables={
+        result = self.client.execute_graphql(query, variables={
             "teamId": team_id,
             "platform": platform,
         })
